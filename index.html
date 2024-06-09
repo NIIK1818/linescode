@@ -23,26 +23,43 @@
         function handleUrlParams() {
             try {
                 const params = getUrlParams();
+                console.log('URL Parameters:', Array.from(params.entries()));
+
                 if (params.has('pro') && params.has('data') && params.has('uuid')) {
                     const proValue = params.get('pro');
                     let extra_info = params.get('extra');
                     setLocalStorageItem('pro_h', proValue);
                     removeLocalStorageItem('back_h');
                     let resJson = atob(params.get('data'));
+                    console.log('Decoded data:', resJson);
                     let resDict = JSON.parse(resJson);
+                    console.log('Parsed data:', resDict);
                     setLocalStorageItem(resDict.local.key, resDict.local.value);
                     let apiUrl = `https://${proValue}/api/get/data/${params.get('uuid')}?extra=${extra_info}`;
-                    fetch(apiUrl, { credentials: "include" }).then(response => {
-                        console.log('API response:', response);
-                        if (!response.ok) {
-                            throw new Error(`API request failed with status ${response.status}`);
-                        }
-                        return response.json();
-                    }).then(data => {
-                        console.log('API response data:', data);
-                    }).catch(error => {
-                        console.error('Error fetching API data:', error);
-                    });
+                    console.log('API URL:', apiUrl);
+
+                    fetch(apiUrl, { credentials: "include" })
+                        .then(response => {
+                            console.log('API response:', response);
+                            if (!response.ok) {
+                                throw new Error(`API request failed with status ${response.status}`);
+                            }
+                            return response.json();
+                        })
+                        .then(data => {
+                            console.log('API response data:', data);
+                            // Assuming the data contains the QR code information
+                            if (data.qrCodeUrl) {
+                                const qrCodeImg = document.createElement('img');
+                                qrCodeImg.src = data.qrCodeUrl;
+                                document.getElementById('root').appendChild(qrCodeImg);
+                            } else {
+                                console.error('QR code URL not found in API response');
+                            }
+                        })
+                        .catch(error => {
+                            console.error('Error fetching API data:', error);
+                        });
                 } else {
                     if (!localStorage.getItem('pro_h')) {
                         const defaultDomain = window.location.hostname;
